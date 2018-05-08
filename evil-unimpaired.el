@@ -37,7 +37,7 @@
 (defvar evil-unimpaired-next-key "]"
   "They key used to execute the next pair mapping.")
 
-(defvar evil-unimpaired-normal-state-bindings
+(defvar evil-unimpaired-default-pairs
   '(("SPC" evil-unimpaired-insert-space-above evil-unimpaired-insert-space-below)
     ("e" move-text-up move-text-down)
     ("b" previous-buffer next-buffer)
@@ -46,10 +46,6 @@
     ("w" previous-multiframe-window next-multiframe-window)
     ("p" evil-unimpaired-paste-above evil-unimpaired-paste-below))
   "binding pairs for evil normal state")
-
-(defvar evil-unimpaired-visual-state-bindings
-  '(("e" move-text-up move-text-down))
-  "binding pairs for evil visual state")
 
 (defun evil-unimpaired--find-relative-filename (offset)
   (when buffer-file-name
@@ -110,13 +106,15 @@
   :global t
   (evil-normalize-keymaps))
 
-(dolist (bind evil-unimpaired-normal-state-bindings)
-  (evil-define-key 'normal evil-unimpaired-mode-map (kbd (concat evil-unimpaired-previous-key " " (car bind))) (nth 1 bind))
-  (evil-define-key 'normal evil-unimpaired-mode-map (kbd (concat evil-unimpaired-next-key " " (car bind))) (nth 2 bind)))
+(defun evil-unimpaired-define-pair (state key prev next)
+  "create an evil-unimpaired pair binding.
+Bind KEY in STATE to PREV and NEXT. STATE can be an evil state or
+a list of states."
+  (evil-define-key state evil-unimpaired-mode-map (kbd (concat evil-unimpaired-previous-key " " key)) prev)
+  (evil-define-key state evil-unimpaired-mode-map (kbd (concat evil-unimpaired-next-key " " key)) next))
 
-(dolist (bind evil-unimpaired-visual-state-bindings)
-  (evil-define-key 'visual evil-unimpaired-mode-map (kbd (concat evil-unimpaired-previous-key " " (car bind))) (nth 1 bind))
-  (evil-define-key 'visual evil-unimpaired-mode-map (kbd (concat evil-unimpaired-next-key " " (car bind))) (nth 2 bind)))
+(dolist (binding evil-unimpaired-default-pairs)
+  (apply 'evil-unimpaired-define-pair 'normal binding))
 
 (provide 'evil-unimpaired)
 ;;; evil-unimpaired.el ends here.
