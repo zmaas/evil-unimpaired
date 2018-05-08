@@ -1,10 +1,5 @@
 ;;; evil-unimpaired.el --- Pairs of handy bracket mappings.
 
-;; Author: Sylvain Benner <sylvain.benner@gmail.com>
-;; Keywords: evil, vim-unimpaired, spacemacs
-;; Version: 0.1
-;; Package-Requires: ((dash "2.12.0") (f "0.18.0"))
-
 ;; This file is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation; either version 3, or (at your option)
@@ -36,7 +31,6 @@
 
 (defvar evil-unimpaired-default-pairs
   '(("SPC" (evil-unimpaired-insert-space-above . evil-unimpaired-insert-space-below))
-    ("e" (move-text-up . move-text-down))
     ("b" (previous-buffer . next-buffer))
     ("f" (evil-unimpaired-previous-file . evil-unimpaired-next-file))
     ("t" (evil-unimpaired-previous-frame . evil-unimpaired-next-frame))
@@ -106,7 +100,7 @@
 (defun evil-unimpaired-define-pair (key funcs &optional state)
   "create an evil-unimpaired pair binding.
 Bind KEY in STATE to PREV and NEXT. STATE can be an evil state or
-a list of states."
+a list of states and defaults to 'normal."
   (dolist (fetcher '(car cdr))
     (let ((evil-state (if state state 'normal))
 	  (key-binding (kbd (concat (funcall fetcher evil-unimpaired-leader-keys) " " key)))
