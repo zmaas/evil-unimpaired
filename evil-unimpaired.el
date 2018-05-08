@@ -31,20 +31,17 @@
 (require 'seq)
 (require 'evil)
 
-(defvar evil-unimpaired-previous-key "["
-  "The key used to execute the previous pair mapping.")
-
-(defvar evil-unimpaired-next-key "]"
-  "They key used to execute the next pair mapping.")
+(defvar evil-unimpaired-leader-keys '("[" . "]")
+  "The pair of leader keys used to execute the pair mappings.")
 
 (defvar evil-unimpaired-default-pairs
-  '(("SPC" evil-unimpaired-insert-space-above evil-unimpaired-insert-space-below)
-    ("e" move-text-up move-text-down)
-    ("b" previous-buffer next-buffer)
-    ("f" evil-unimpaired-previous-file evil-unimpaired-next-file)
-    ("t" evil-unimpaired-previous-frame evil-unimpaired-next-frame)
-    ("w" previous-multiframe-window next-multiframe-window)
-    ("p" evil-unimpaired-paste-above evil-unimpaired-paste-below))
+  '(("SPC" (evil-unimpaired-insert-space-above . evil-unimpaired-insert-space-below))
+    ("e" (move-text-up . move-text-down))
+    ("b" (previous-buffer . next-buffer))
+    ("f" (evil-unimpaired-previous-file . evil-unimpaired-next-file))
+    ("t" (evil-unimpaired-previous-frame . evil-unimpaired-next-frame))
+    ("w" (previous-multiframe-window . next-multiframe-window))
+    ("p" (evil-unimpaired-paste-above . evil-unimpaired-paste-below)))
   "binding pairs for evil normal state")
 
 (defun evil-unimpaired--find-relative-filename (offset)
@@ -106,15 +103,18 @@
   :global t
   (evil-normalize-keymaps))
 
-(defun evil-unimpaired-define-pair (state key prev next)
+(defun evil-unimpaired-define-pair (key funcs &optional state)
   "create an evil-unimpaired pair binding.
 Bind KEY in STATE to PREV and NEXT. STATE can be an evil state or
 a list of states."
-  (evil-define-key state evil-unimpaired-mode-map (kbd (concat evil-unimpaired-previous-key " " key)) prev)
-  (evil-define-key state evil-unimpaired-mode-map (kbd (concat evil-unimpaired-next-key " " key)) next))
+  (dolist (fetcher '(car cdr))
+    (let ((evil-state (if state state 'normal))
+	  (key-binding (kbd (concat (funcall fetcher evil-unimpaired-leader-keys) " " key)))
+	  (func (funcall fetcher funcs)))
+      (evil-define-key evil-state evil-unimpaired-mode-map key-binding func))))
 
-(dolist (binding evil-unimpaired-default-pairs)
-  (apply 'evil-unimpaired-define-pair 'normal binding))
+(dolist (pair evil-unimpaired-default-pairs)
+  (apply 'evil-unimpaired-define-pair pair))
 
 (provide 'evil-unimpaired)
 ;;; evil-unimpaired.el ends here.
