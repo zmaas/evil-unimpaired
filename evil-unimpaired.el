@@ -30,8 +30,29 @@
 
 (require 'dash)
 (require 'f)
+(require 'evil)
 
-(defun evil-unimpaired//find-relative-filename (offset)
+(defvar evil-unimpaired-previous-key "["
+  "The key used to execute the previous pair mapping.")
+
+(defvar evil-unimpaired-next-key "]"
+  "They key used to execute the next pair mapping.")
+
+(defvar evil-unimpaired-normal-state-bindings
+  '(("SPC" evil-unimpaired-insert-space-above evil-unimpaired-insert-space-below)
+    ("e" move-text-up move-text-down)
+    ("b" previous-buffer next-buffer)
+    ("f" evil-unimpaired-previous-file evil-unimpaired-next-file)
+    ("t" evil-unimpaired-previous-frame evil-unimpaired-next-frame)
+    ("w" previous-multiframe-window next-multiframe-window)
+    ("p" evil-unimpaired-paste-above evil-unimpaired-paste-below))
+  "binding pairs for evil normal state")
+
+(defvar evil-unimpaired-visual-state-bindings
+  '(("e" move-text-up move-text-down))
+  "binding pairs for evil visual state")
+
+(defun evil-unimpaired--find-relative-filename (offset)
   (when buffer-file-name
     (let* ((directory (f-dirname buffer-file-name))
            (files (f--files directory (not (s-matches? "^\\.?#" it))))
@@ -40,73 +61,58 @@
       (when file
         (f-expand file directory)))))
 
-(defun evil-unimpaired/previous-file ()
+(defun evil-unimpaired-previous-file ()
   (interactive)
   (-if-let (filename (evil-unimpaired//find-relative-filename -1))
       (find-file filename)
     (user-error "No previous file")))
 
-(defun evil-unimpaired/next-file ()
+(defun evil-unimpaired-next-file ()
   (interactive)
   (-if-let (filename (evil-unimpaired//find-relative-filename 1))
       (find-file filename)
     (user-error "No next file")))
 
-(defun evil-unimpaired/paste-above ()
+(defun evil-unimpaired-paste-above ()
   (interactive)
   (evil-insert-newline-above)
   (evil-paste-after 1))
 
-(defun evil-unimpaired/paste-below ()
+(defun evil-unimpaired-paste-below ()
   (interactive)
   (evil-insert-newline-below)
   (evil-paste-after 1))
 
-(defun evil-unimpaired/insert-space-above (count)
+(defun evil-unimpaired-insert-space-above (count)
   (interactive "p")
   (dotimes (_ count) (save-excursion (evil-insert-newline-above))))
 
-(defun evil-unimpaired/insert-space-below (count)
+(defun evil-unimpaired-insert-space-below (count)
   (interactive "p")
   (dotimes (_ count) (save-excursion (evil-insert-newline-below))))
 
-(defun evil-unimpaired/next-frame ()
+(defun evil-unimpaired-next-frame ()
   (interactive)
   (raise-frame (next-frame)))
 
-(defun evil-unimpaired/previous-frame ()
+(defun evil-unimpaired-previous-frame ()
   (interactive)
   (raise-frame (previous-frame)))
 
-;; from tpope's unimpaired
-(define-key evil-normal-state-map (kbd "[ SPC")
-  'evil-unimpaired/insert-space-above)
-(define-key evil-normal-state-map (kbd "] SPC")
-  'evil-unimpaired/insert-space-below)
-(define-key evil-normal-state-map (kbd "[ e") 'move-text-up)
-(define-key evil-normal-state-map (kbd "] e") 'move-text-down)
-(define-key evil-visual-state-map (kbd "[ e") ":move'<--1")
-(define-key evil-visual-state-map (kbd "] e") ":move'>+1")
-;; (define-key evil-visual-state-map (kbd "[ e") 'move-text-up)
-;; (define-key evil-visual-state-map (kbd "] e") 'move-text-down)
-(define-key evil-normal-state-map (kbd "[ b") 'previous-buffer)
-(define-key evil-normal-state-map (kbd "] b") 'next-buffer)
-(define-key evil-normal-state-map (kbd "[ f") 'evil-unimpaired/previous-file)
-(define-key evil-normal-state-map (kbd "] f") 'evil-unimpaired/next-file)
-(when (featurep 'flycheck)
-	(define-key evil-normal-state-map (kbd "] l") 'flycheck-next-error)
-	(define-key evil-normal-state-map (kbd "[ l") 'flycheck-previous-error)
-	(define-key evil-normal-state-map (kbd "] q") 'flycheck-next-error)
-	(define-key evil-normal-state-map (kbd "[ q") 'flycheck-previous-error))
-(define-key evil-normal-state-map (kbd "[ t") 'evil-unimpaired/previous-frame)
-(define-key evil-normal-state-map (kbd "] t") 'evil-unimpaired/next-frame)
-(define-key evil-normal-state-map (kbd "[ w") 'previous-multiframe-window)
-(define-key evil-normal-state-map (kbd "] w") 'next-multiframe-window)
-;; select pasted text
-(define-key evil-normal-state-map (kbd "g p") (kbd "` [ v ` ]"))
-;; paste above or below with newline
-(define-key evil-normal-state-map (kbd "[ p") 'evil-unimpaired/paste-above)
-(define-key evil-normal-state-map (kbd "] p") 'evil-unimpaired/paste-below)
+;;;###autoload
+(define-minor-mode evil-unimpaired-mode
+  "Global minor mode to provide convient pairs of bindings"
+  :keymap (make-sparse-keymap)
+  :global t
+  (evil-normalize-keymaps))
+
+(dolist (bind evil-unimpaired-normal-state-bindings)
+  (evil-define-key 'normal evil-unimpaired-mode-map (kbd (concat evil-unimpaired-previous-key " " (car bind))) (nth 1 bind))
+  (evil-define-key 'normal evil-unimpaired-mode-map (kbd (concat evil-unimpaired-next-key " " (car bind))) (nth 2 bind)))
+
+(dolist (bind evil-unimpaired-visual-state-bindings)
+  (evil-define-key 'visual evil-unimpaired-mode-map (kbd (concat evil-unimpaired-previous-key " " (car bind))) (nth 1 bind))
+  (evil-define-key 'visual evil-unimpaired-mode-map (kbd (concat evil-unimpaired-next-key " " (car bind))) (nth 2 bind)))
 
 (provide 'evil-unimpaired)
 ;;; evil-unimpaired.el ends here.
