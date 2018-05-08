@@ -28,7 +28,7 @@
 
 ;;; Code:
 
-(require 'dash)
+(require 'seq)
 (require 'f)
 (require 'evil)
 
@@ -56,20 +56,20 @@
   (when buffer-file-name
     (let* ((directory (f-dirname buffer-file-name))
            (files (f--files directory (not (s-matches? "^\\.?#" it))))
-           (index (+ (-elem-index buffer-file-name files) offset))
+           (index (+ (seq-position files buffer-file-name) offset))
            (file (and (>= index 0) (nth index files))))
       (when file
         (f-expand file directory)))))
 
 (defun evil-unimpaired-previous-file ()
   (interactive)
-  (-if-let (filename (evil-unimpaired//find-relative-filename -1))
+  (if-let (filename (evil-unimpaired--find-relative-filename -1))
       (find-file filename)
     (user-error "No previous file")))
 
 (defun evil-unimpaired-next-file ()
   (interactive)
-  (-if-let (filename (evil-unimpaired//find-relative-filename 1))
+  (if-let (filename (evil-unimpaired--find-relative-filename 1))
       (find-file filename)
     (user-error "No next file")))
 
