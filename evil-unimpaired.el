@@ -29,7 +29,6 @@
 ;;; Code:
 
 (require 'seq)
-(require 'f)
 (require 'evil)
 
 (defvar evil-unimpaired-previous-key "["
@@ -54,12 +53,17 @@
 
 (defun evil-unimpaired--find-relative-filename (offset)
   (when buffer-file-name
-    (let* ((directory (f-dirname buffer-file-name))
-           (files (f--files directory (not (s-matches? "^\\.?#" it))))
+    (let* ((directory (file-name-directory buffer-file-name))
+	   (files (seq-filter 'file-regular-p
+			      (directory-files directory
+					       'full
+					       (rx bos ;; ignore auto-save-files
+						   (optional ".")
+						   (not (any ".#"))))))
            (index (+ (seq-position files buffer-file-name) offset))
            (file (and (>= index 0) (nth index files))))
       (when file
-        (f-expand file directory)))))
+        (expand-file-name file directory)))))
 
 (defun evil-unimpaired-previous-file ()
   (interactive)
