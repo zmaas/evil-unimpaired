@@ -74,6 +74,36 @@
   (evil-insert-newline-below)
   (evil-paste-after 1))
 
+(defun evil-unimpaired-paste-above-and-indent ()
+  (interactive)
+  (evil-unimpaired-paste-above)
+  (evil-shift-right (line-beginning-position) (line-end-position)))
+
+(defun evil-unimpaired-paste-below-and-indent ()
+  (interactive)
+  (evil-unimpaired-paste-below)
+  (evil-shift-right (line-beginning-position) (line-end-position)))
+
+(defun evil-unimpaired-paste-above-and-unindent ()
+  (interactive)
+  (evil-unimpaired-paste-above)
+	(evil-shift-left (line-beginning-position) (line-end-position)))
+
+(defun evil-unimpaired-paste-below-and-unindent ()
+  (interactive)
+  (evil-unimpaired-paste-below)
+  (evil-shift-left (line-beginning-position) (line-end-position)))
+
+(defun evil-unimpaired-paste-above-and-reindent ()
+  (interactive)
+  (evil-unimpaired-paste-above)
+	(evil-indent (line-beginning-position) (line-end-position)))
+
+(defun evil-unimpaired-paste-below-and-reindent ()
+  (interactive)
+  (evil-unimpaired-paste-below)
+  (evil-indent (line-beginning-position) (line-end-position)))
+
 (defun evil-unimpaired-insert-space-above (count)
   (interactive "p")
   (dotimes (_ count) (save-excursion (evil-insert-newline-above))))
@@ -109,6 +139,26 @@ a list of states and defaults to 'normal."
 
 (dolist (pair evil-unimpaired-default-pairs)
   (apply 'evil-unimpaired-define-pair pair))
+
+(defvar evil-unimpaired-angle-bracket-default-pairs
+  '(("p" (evil-unimpaired-paste-above-and-indent
+					. evil-unimpaired-paste-below-and-indent))
+		("P" (evil-unimpaired-paste-above-and-unindent
+					. evil-unimpaired-paste-below-and-unindent)))
+	"Bindidng pairs for angle brackets (experimental).")
+
+(defvar evil-unimpaired-equal-sign-default-pairs
+	'(("p" (evil-unimpaired-paste-above-and-reindent
+					. evil-unimpaired-paste-below-and-reindent)))
+	"Binding pairs for equal sign (experimental).")
+
+(let ((evil-unimpaired-leader-keys '("<" . ">")))
+	(dolist (pair evil-unimpaired-angle-bracket-default-pairs)
+		(apply 'evil-unimpaired-define-pair pair)))
+
+(let ((evil-unimpaired-leader-keys '("=" . "=")))
+	(dolist (pair evil-unimpaired-equal-sign-default-pairs)
+		(apply 'evil-unimpaired-define-pair pair)))
 
 (provide 'evil-unimpaired)
 ;;; evil-unimpaired.el ends here.
