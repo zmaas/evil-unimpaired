@@ -67,12 +67,12 @@
 (defun evil-unimpaired-paste-above ()
   (interactive)
   (evil-insert-newline-above)
-  (evil-paste-after 1))
+  (evil-paste-after 1 evil-this-register))
 
 (defun evil-unimpaired-paste-below ()
   (interactive)
   (evil-insert-newline-below)
-  (evil-paste-after 1))
+  (evil-paste-after 1 evil-this-register))
 
 (defun evil-unimpaired-paste-above-and-indent ()
   (interactive)
