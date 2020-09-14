@@ -36,7 +36,10 @@
     ("t" (evil-unimpaired-previous-frame . evil-unimpaired-next-frame))
     ("w" (previous-multiframe-window . next-multiframe-window))
     ("p" (evil-unimpaired-paste-above . evil-unimpaired-paste-below)))
-  "binding pairs for evil normal state")
+  "binding pairs for evil-unimpaired-state")
+
+(defvar evil-unimpaired-state 'normal
+  "The state(s) which evil-unimpaired should be enabled for.")
 
 (defun evil-unimpaired--find-relative-filename (offset)
   (when buffer-file-name
@@ -97,18 +100,28 @@
   :global t
   (evil-normalize-keymaps))
 
-(defun evil-unimpaired-define-pair (key funcs &optional state)
+(defun evil-unimpaired-define-pair (key funcs)
   "create an evil-unimpaired pair binding.
 Bind KEY in STATE to PREV and NEXT. STATE can be an evil state or
 a list of states and defaults to 'normal."
   (dolist (fetcher '(car cdr))
-    (let ((evil-state (if state state 'normal))
-	  (key-binding (kbd (concat (funcall fetcher evil-unimpaired-leader-keys) " " key)))
+    (let ((key-binding (kbd (concat (funcall fetcher evil-unimpaired-leader-keys) " " key)))
 	  (func (funcall fetcher funcs)))
-      (evil-define-key evil-state evil-unimpaired-mode-map key-binding func))))
+      (evil-define-key
+	evil-unimpaired-state evil-unimpaired-mode-map key-binding func))))
 
-(dolist (pair evil-unimpaired-default-pairs)
-  (apply 'evil-unimpaired-define-pair pair))
+(defun evil-unimpaired-define-keymap ()
+  "Build the evil-unimpaired keymap. This is setup as a function because it
+needs to be run each time the mode is activated in case the values of the control
+variables have changed:
+* evil-unimpaired-leader-keys
+* evil-unimpaired-default-pairs
+* evil-unimpaired-state
+"
+  (dolist (pair evil-unimpaired-default-pairs)
+    (apply 'evil-unimpaired-define-pair pair)))
+
+(add-hook 'evil-unimpaired-mode-hook 'evil-unimpaired-define-keymap)
 
 (provide 'evil-unimpaired)
 ;;; evil-unimpaired.el ends here.
