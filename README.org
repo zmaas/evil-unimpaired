@@ -41,3 +41,13 @@ enabled. They can also be added using =evil-unimpaired-define-pair=.
   (evil-unimpaired-define-pair "e" '(move-text-up . move-text-down) '(normal visual))
   (evil-unimpaired-define-pair "q" '(flycheck-previous-error . flycheck-next-error))
 #+END_SRC
+
+*** Evil States
+The state(s) where the keybinds are active is set by
+=evil-unimpaired-state=. By default this is set to ='normal=.
+
+To let evil-unimpaired work in read only buffers set it to ='motion=
+#+BEGIN_SRC emacs-list
+  (setq evil-unimpaired-state 'motion) 
+#+END_SRC
+
